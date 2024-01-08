@@ -34,7 +34,7 @@ program_start = time()
 parser = argparse.ArgumentParser()
 # main config
 parser.add_argument('--config',
-                    default=r"G:\Other computers\My Laptop\PhD\Codebase\signal-recovery\configs\v7.1\ctown_7v1__EPYNET_config.ini",
+                    default=r".\configs\v7.1\ctown_7v1__EPYNET_config.ini",
                     type=str, help='configuration path')
 
 # initial valve/pipe states

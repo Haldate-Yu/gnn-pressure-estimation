@@ -16,7 +16,7 @@ import argparse
 # define a dummy configs
 parser = argparse.ArgumentParser()
 parser.add_argument('--wn_inp_path',
-                    default=r'..\..\inputs\ctown.inp', type=str,
+                    default=r'.\inputs\ctown.inp', type=str,
                     help='water EPANET INPUT path')
 parser.add_argument('--config_variant', default='7v1', type=str, help='additional name for config')
 parser.add_argument('--num_scenarios', default=10, type=float, help='number of generated scenarios')
@@ -84,7 +84,7 @@ parser.add_argument('--head_add_ele', default=True, type=float,
 args = parser.parse_args([])
 
 
-def get_range(arr: np.ndarray, lo: float, hi: float, is_quantile: bool = False) -> tuple[np.ndarray, np.ndarray]:
+def get_range(arr: np.ndarray, lo: float, hi: float, is_quantile: bool = False):
     """get range of a hydraulic parameter
 
     Args:
@@ -106,7 +106,7 @@ def get_range(arr: np.ndarray, lo: float, hi: float, is_quantile: bool = False) 
     return data_lo, data_hi
 
 
-def create_dummy_config(config_dir_path: str) -> tuple[ConfigParser, str]:
+def create_dummy_config(config_dir_path: str):
     """Create dummy config given an INP file.
     For each hydraulic parameter,
       We simply get [Q1,Q3] or [min,max] as its range
@@ -264,6 +264,6 @@ def print_config(config: ConfigParser):
 
 
 if __name__ == '__main__':
-    config, config_path = create_dummy_config(config_dir_path=r'configs\v7.1')
+    config, config_path = create_dummy_config(config_dir_path=r'./configs/v7.1')
     print(f'Config path = {config_path}')
     print_config(config=config)
