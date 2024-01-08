@@ -5,12 +5,13 @@ from torch_geometric.nn import BatchNorm
 
 from typing import List, Optional, Union
 from torch import Tensor
-from torch.nn import ( Dropout, Sequential, SELU)
+from torch.nn import (Dropout, Sequential, SELU)
 from torch_scatter import scatter
 from torch_geometric.nn.conv import MessagePassing
 from torch_geometric.nn.dense.linear import Linear
 from torch_geometric.typing import Adj, OptPairTensor, OptTensor, Size
 from torch_geometric.nn.conv import SimpleConv
+
 
 class GATConvNet(torch.nn.Module):
     def __init__(self, net_params):
@@ -83,6 +84,7 @@ class ARMAConvNet(torch.nn.Module):
 
         return torch.sigmoid(x)
 
+
 class GCNConvNet(torch.nn.Module):
     def __init__(self, net_params):
         super(GCNConvNet, self).__init__()
@@ -132,7 +134,7 @@ class GCNBaseNet(torch.nn.Module):
 
 
 class MixerMLP(torch.nn.Module):
-    def __init__(self,name, net_params):
+    def __init__(self, name, net_params):
         super(MixerMLP, self).__init__()
         self.name = 'mixer_mlp'
         # torch.manual_seed(42)
@@ -149,12 +151,14 @@ class MixerMLP(torch.nn.Module):
         x = torch.sigmoid(x)
         x = x.view_as(ori)
         return x
+
+
 #######################################################################
-#ref: https://github.com/BME-SmartLab/GraphConvWat/blob/be97b45fbc7dfdba22bb1ee406424a7c568120e5/model/richmond.py
+# ref: https://github.com/BME-SmartLab/GraphConvWat/blob/be97b45fbc7dfdba22bb1ee406424a7c568120e5/model/richmond.py
 class GraphConvWat(torch.nn.Module):
-    def __init__(self,name, in_channels, out_channels):
+    def __init__(self, name, in_channels, out_channels):
         super().__init__()
-        self.name=name
+        self.name = name
         self.block1 = ChebConv(in_channels, 120, K=240)
         self.block2 = ChebConv(120, 60, K=120)
         self.block3 = ChebConv(60, 30, K=20)
@@ -167,10 +171,11 @@ class GraphConvWat(torch.nn.Module):
         x = self.block4(x, edge_index)
         return x
 
+
 class ChebNet(torch.nn.Module):
-    def __init__(self, in_channels, out_channels, name='ChebNet', nc = 32):
+    def __init__(self, in_channels, out_channels, name='ChebNet', nc=32):
         super(ChebNet, self).__init__()
-        self.name=name 
+        self.name = name
         self.block1 = ChebConv(in_channels, nc, K=24)
         self.block2 = ChebConv(nc, nc, K=12)
         self.block3 = ChebConv(nc, nc, K=10)
@@ -183,96 +188,97 @@ class ChebNet(torch.nn.Module):
         x = self.block4(x, edge_index)
         return x
 
+
 #####################################################################################################
 
 class GCN2(torch.nn.Module):
-    def __init__(self,name='GCN2',num_blocks = 64, nc = 32, in_channels=1, out_channels=1):
+    def __init__(self, name='GCN2', num_blocks=64, nc=32, in_channels=1, out_channels=1):
         super(GCN2, self).__init__()
         self.num_blocks = num_blocks
-        self.name= f'{name}_{num_blocks}b_{nc}c'
-        blocks= []
+        self.name = f'{name}_{num_blocks}b_{nc}c'
+        blocks = []
 
         for i in range(self.num_blocks):
-            layer = GCN2Conv(nc,alpha=0.1,theta=0.5,layer=i+1)
+            layer = GCN2Conv(nc, alpha=0.1, theta=0.5, layer=i + 1)
             blocks.append(layer)
         self.blocks = torch.nn.ModuleList(blocks)
         self.steam = Linear(in_channels=in_channels, out_channels=nc)
         self.lin = Linear(in_channels=nc, out_channels=out_channels)
-    
+
     def forward(self, x, edge_index, batch=None, edge_attr=None):
         x = self.steam(x)
         x_0 = x
         for i in range(self.num_blocks):
-            x = self.blocks[i](x=x, x_0=x_0 , edge_index=edge_index) 
+            x = self.blocks[i](x=x, x_0=x_0, edge_index=edge_index)
         x = self.lin(x)
         return x
-    
+
+
 class GAT(torch.nn.Module):
-    def __init__(self,name='GAT',num_blocks = 10, nc = 32, in_channels=1, out_channels=1):
+    def __init__(self, name='GAT', num_blocks=10, nc=32, in_channels=1, out_channels=1):
         super(GAT, self).__init__()
         self.num_blocks = num_blocks
-        self.name= f'{name}_{num_blocks}b_{nc}c'
-        blocks= []
+        self.name = f'{name}_{num_blocks}b_{nc}c'
+        blocks = []
 
         for i in range(self.num_blocks):
-            if i == 0 :
-                layer = GATConv(in_channels,nc,heads=2,concat=True)
+            if i == 0:
+                layer = GATConv(in_channels, nc, heads=2, concat=True)
             elif i == self.num_blocks - 1:
-                layer = GATConv(2*nc,out_channels,heads=1,concat=True)
+                layer = GATConv(2 * nc, out_channels, heads=1, concat=True)
             else:
-                layer = GATConv(2*nc,nc,heads=2,concat=True)
+                layer = GATConv(2 * nc, nc, heads=2, concat=True)
             blocks.append(layer)
         self.blocks = torch.nn.ModuleList(blocks)
-    
+
     def forward(self, x, edge_index, batch=None, edge_attr=None):
         for i in range(self.num_blocks):
-            x = self.blocks[i](x, edge_index) 
+            x = self.blocks[i](x, edge_index)
         return x
 
 
 class GIN(torch.nn.Module):
-    def __init__(self,name='GIN_bottleneck',num_blocks = 10, nc = 32, in_channels=1, out_channels=1):
+    def __init__(self, name='GIN_bottleneck', num_blocks=10, nc=32, in_channels=1, out_channels=1):
         super(GIN, self).__init__()
         self.name = f'{name}_{num_blocks}b_{nc}c'
-        
+
         self.num_blocks = num_blocks
 
-        blocks= []
+        blocks = []
 
         for i in range(self.num_blocks):
-            if i == 0 :
-                layer = GINConv(MLP(dims=[in_channels,nc//2,nc]),eps=0.0)
+            if i == 0:
+                layer = GINConv(MLP(dims=[in_channels, nc // 2, nc]), eps=0.0)
             elif i == self.num_blocks - 1:
-                layer = GINConv(Linear(nc,out_channels,bias=False),eps=0.0)
+                layer = GINConv(Linear(nc, out_channels, bias=False), eps=0.0)
             else:
-                layer = GINConv(MLP(dims=[nc,nc//2,nc]),eps=0.0)
+                layer = GINConv(MLP(dims=[nc, nc // 2, nc]), eps=0.0)
             blocks.append(layer)
         self.blocks = torch.nn.ModuleList(blocks)
-       
 
-    
     def forward(self, x, edge_index, batch=None, edge_attr=None):
         for i in range(self.num_blocks):
-            o=x
+            o = x
             x = self.blocks[i](x, edge_index)
             if x.shape[-1] == o.shape[-1]:
-              x = x + o
+                x = x + o
         return x
-    
+
 
 #####################################################################################################
-#REF: https://github.com/HammerLabML/GCNs_for_WDS
+# REF: https://github.com/HammerLabML/GCNs_for_WDS
 class MLP(Sequential):
     def __init__(self, dims: List[int], bias: bool = True, dropout: float = 0., activ=SELU()):
         m = []
         for i in range(1, len(dims)):
             m.append(Linear(dims[i - 1], dims[i], bias=bias))
 
-            if i < len(dims) - 1:                
+            if i < len(dims) - 1:
                 m.append(activ)
                 m.append(Dropout(dropout))
 
         super().__init__(*m)
+
 
 class GENConvolution(MessagePassing):
     r"""
@@ -306,8 +312,9 @@ class GENConvolution(MessagePassing):
         - **output:** node features :math:`(|\mathcal{V}|, F_{out})` or
           :math:`(|\mathcal{V}_t|, F_{out})` if bipartite
     """
+
     def __init__(self, in_dim: int, out_dim: int, edge_dim: int,
-                 aggr: str = 'add', num_layers: int = 2, eps: float = 1e-7, 
+                 aggr: str = 'add', num_layers: int = 2, eps: float = 1e-7,
                  bias: bool = True, dropout: float = 0., **kwargs):
 
         kwargs.setdefault('aggr', None)
@@ -318,7 +325,7 @@ class GENConvolution(MessagePassing):
         self.edge_dim = edge_dim
         self.aggr = aggr
         self.eps = eps
-        
+
         assert aggr in ['add', 'mean', 'max']
 
         dims = [self.in_dim]
@@ -328,8 +335,8 @@ class GENConvolution(MessagePassing):
         self.mlp = MLP(dims, bias=bias, dropout=dropout)
 
         """ Added a linear layer to manage dimensionality """
-        #print(f'res in = {in_dim+edge_dim}')
-        #print(f'res out = {in_dim}')
+        # print(f'res in = {in_dim+edge_dim}')
+        # print(f'res out = {in_dim}')
         self.res = Linear(in_dim + edge_dim, in_dim, bias=bias)
 
     def reset_parameters(self):
@@ -340,64 +347,66 @@ class GENConvolution(MessagePassing):
         if self.p and isinstance(self.p, Tensor):
             self.p.data.fill_(self.initial_p)
 
-    #def forward(self, x: Union[Tensor, OptPairTensor], edge_index: Adj,
+    # def forward(self, x: Union[Tensor, OptPairTensor], edge_index: Adj,
     #            edge_attr: OptTensor = None, size: Size = None, 
     #            residual: bool = True, mlp: bool = True) -> Tensor:
     def forward(self, x, edge_index,
                 batch=None,
-                edge_attr=None, size= None, 
-                residual = True, mlp = True) -> Tensor:
+                edge_attr=None, size=None,
+                residual=True, mlp=True) -> Tensor:
         """"""
-        #print(f'index = {gcn_index}')           
+        # print(f'index = {gcn_index}')
         if isinstance(x, Tensor):
-            x: OptPairTensor = (x, x)        
+            x: OptPairTensor = (x, x)
         x_in = x[0]
-        
+
         # propagate_type: (x: OptPairTensor, edge_attr: OptTensor)
         if edge_attr is not None:
-          sndr_node_attr = torch.gather(x_in, 0, edge_index[0:1,:].repeat(x_in.shape[1], 1).T)
-          rcvr_node_attr = torch.gather(x_in, 0, edge_index[1:2,:].repeat(x_in.shape[1], 1).T)
-          
-          edge_attr = edge_attr + (sndr_node_attr - rcvr_node_attr).abs()
-          
-        latent = self.propagate(edge_index=edge_index, x=x, edge_attr=edge_attr, size=size) 
-        
+            sndr_node_attr = torch.gather(x_in, 0, edge_index[0:1, :].repeat(x_in.shape[1], 1).T)
+            rcvr_node_attr = torch.gather(x_in, 0, edge_index[1:2, :].repeat(x_in.shape[1], 1).T)
+
+            edge_attr = edge_attr + (sndr_node_attr - rcvr_node_attr).abs()
+
+        latent = self.propagate(edge_index=edge_index, x=x, edge_attr=edge_attr, size=size)
+
         """ Added a linear layer to manage dimensionality """
         if mlp:
             latent = self.res(latent)
         else:
             latent = torch.tanh(self.res(latent))
 
-        #del sndr_node_attr, rcvr_node_attr
-        
+        # del sndr_node_attr, rcvr_node_attr
+
         if residual:
             latent = latent + x[1]
-        
-        #del x, edge_index, edge_attr 
+
+        # del x, edge_index, edge_attr
         if mlp:
-            latent = self.mlp(latent)  
-        return latent       
+            latent = self.mlp(latent)
+        return latent
 
     def message(self, x_j: Tensor, edge_attr: OptTensor) -> Tensor:
         """ Concatenating edge features instead of adding those to node features """
-        
+
         msg = x_j if edge_attr is None else torch.cat((x_j, edge_attr), dim=1)
-        #print(f'msg.shape = {msg.shape}')
-        #del x_j, edge_attr
+        # print(f'msg.shape = {msg.shape}')
+        # del x_j, edge_attr
         return F.selu(msg) + self.eps
 
     def aggregate(self, inputs: Tensor, index: Tensor,
                   dim_size: Optional[int] = None) -> Tensor:
 
         return scatter(inputs, index, dim=self.node_dim, dim_size=dim_size,
-                           reduce=self.aggr)
+                       reduce=self.aggr)
 
     def __repr__(self) -> str:
         return (f'{self.__class__.__name__}({self.in_dim}, '
                 f'{self.out_dim}, aggr={self.aggr})')
-        
+
+
 class m_GCN(torch.nn.Module):
-    def __init__(self,name=None, in_dim=1, out_dim=1, edge_dim=0, latent_dim=32, n_aggr=45, n_hops=1, bias=False, num_layers=2, dropout=0., batch_size=32, w_sigmoid=True):
+    def __init__(self, name=None, in_dim=1, out_dim=1, edge_dim=0, latent_dim=32, n_aggr=45, n_hops=1, bias=False,
+                 num_layers=2, dropout=0., batch_size=32, w_sigmoid=True):
         super(m_GCN, self).__init__()
         self.name = f'mGCN-n_aggr{n_aggr}-nhops{n_hops}-nmlp{num_layers}' if name is None else name
         self.n_aggr = n_aggr
@@ -406,24 +415,24 @@ class m_GCN(torch.nn.Module):
         self.latent = latent_dim
         self.out_dim = out_dim
         self.w_sigmoid = w_sigmoid
-        self.node_in = torch.nn.Linear(in_dim, latent_dim, bias=bias)        
+        self.node_in = torch.nn.Linear(in_dim, latent_dim, bias=bias)
         self.node_out = torch.nn.Linear(latent_dim, out_dim, bias=bias)
-        self.edge = torch.nn.Linear(edge_dim, latent_dim, bias=bias)        
-            
+        self.edge = torch.nn.Linear(edge_dim, latent_dim, bias=bias)
+
         self.gcn_aggrs = torch.nn.ModuleList()
         for _ in range(n_aggr):
-            gcn = GENConvolution(latent_dim, latent_dim, latent_dim, aggr="add", bias=bias, num_layers=num_layers, dropout=dropout)
+            gcn = GENConvolution(latent_dim, latent_dim, latent_dim, aggr="add", bias=bias, num_layers=num_layers,
+                                 dropout=dropout)
             self.gcn_aggrs.append(gcn)
 
-        
-    def forward(self, x, edge_index, batch = None, edge_attr=None):
-        #print(f'edge_attr type = {type(edge_attr)}')
-        
-        #print(f'edge_index shape = {edge_index.shape}')
-        #print(f'sndr_node_attr shape = {sndr_node_attr.shape}')
-        #print(f'rcvr_node_attr shape = {rcvr_node_attr.shape}')
-        #print(f'x_in shape = {x_in.shape}')
-        #print(f'edge_attr shape = {edge_attr.shape}')
+    def forward(self, x, edge_index, batch=None, edge_attr=None):
+        # print(f'edge_attr type = {type(edge_attr)}')
+
+        # print(f'edge_index shape = {edge_index.shape}')
+        # print(f'sndr_node_attr shape = {sndr_node_attr.shape}')
+        # print(f'rcvr_node_attr shape = {rcvr_node_attr.shape}')
+        # print(f'x_in shape = {x_in.shape}')
+        # print(f'edge_attr shape = {edge_attr.shape}')
         """ Embedding for edge features. """
         if edge_attr is not None:
             edge_attr = self.edge(edge_attr)
@@ -433,21 +442,22 @@ class m_GCN(torch.nn.Module):
         """ 
             Mutiple GCN layers.
         """
-        for i,gcn in enumerate(self.gcn_aggrs):
+        for i, gcn in enumerate(self.gcn_aggrs):
             """
                 Multiple Hops.
             """
-            #print(f'checking gcn_{i}')
+            # print(f'checking gcn_{i}')
             for _ in range(self.n_hops - 1):
-                Z = torch.selu(gcn(x=Z, edge_index=edge_index, edge_attr=edge_attr,  mlp=False))
-            Z = torch.selu(gcn(x=Z, edge_index=edge_index, edge_attr=edge_attr,  mlp=True))
-                
+                Z = torch.selu(gcn(x=Z, edge_index=edge_index, edge_attr=edge_attr, mlp=False))
+            Z = torch.selu(gcn(x=Z, edge_index=edge_index, edge_attr=edge_attr, mlp=True))
+
         """ Reconstructing node features through a final dense layer. """
         y_predict = self.node_out(Z)
         if self.w_sigmoid:
             y_predict = F.sigmoid(y_predict)
         return y_predict
-    
+
+
 ###############################################################################################
 
 
@@ -469,7 +479,7 @@ class GResBlockMeanConv(torch.nn.Module):
 
 
 class GATResMeanConv(torch.nn.Module):
-    def __init__(self, name='GATResMeanConv', num_blocks=5, nc = 32):
+    def __init__(self, name='GATResMeanConv', num_blocks=5, nc=32):
         super(GATResMeanConv, self).__init__()
 
         self.num_blocks = num_blocks
@@ -490,13 +500,13 @@ class GATResMeanConv(torch.nn.Module):
             x = self.blocks[i](x, edge_index, edge_attr)
 
         x = self.lin1(x)
-        #x = torch.sigmoid(x)
+        # x = torch.sigmoid(x)
         return x
-    
+
 
 ###############################################################################################
 class GATResMeanConvWithRemask(torch.nn.Module):
-    def __init__(self, name='GATResMeanConvWithRemask', num_blocks=5, nc = 32):
+    def __init__(self, name='GATResMeanConvWithRemask', num_blocks=5, nc=32):
         super(GATResMeanConvWithRemask, self).__init__()
 
         self.num_blocks = num_blocks
@@ -510,40 +520,39 @@ class GATResMeanConvWithRemask(torch.nn.Module):
 
         self.decoder = Linear(nc, 1)
 
-        
-
-    def forward(self, x : torch.Tensor, edge_index, batch=None, edge_attr=None, batch_mask=None, batch_second_mask=None):
+    def forward(self, x: torch.Tensor, edge_index, batch=None, edge_attr=None, batch_mask=None, batch_second_mask=None):
         assert batch_mask is not None, 'input batch mask for Remasking strategy'
-        
-        batch_unmask = ~batch_mask.bool()
-        #x has shape (bn, 1)
-        #unmasked_x has shape (bn, 1)
-        unmasked_x = x[batch_unmask] 
 
-        #unmasked_x has shape (bn, nc)
+        batch_unmask = ~batch_mask.bool()
+        # x has shape (bn, 1)
+        # unmasked_x has shape (bn, 1)
+        unmasked_x = x[batch_unmask]
+
+        # unmasked_x has shape (bn, nc)
         unmasked_x = self.encoder(unmasked_x)
 
-        #x has shape (bn, nc)
-        x = x.repeat(1,unmasked_x.size(-1))
+        # x has shape (bn, nc)
+        x = x.repeat(1, unmasked_x.size(-1))
         x[batch_unmask] = unmasked_x
 
-        #x has shape (bn, nc)
+        # x has shape (bn, nc)
         for i in range(self.num_blocks):
             x = self.blocks[i](x, edge_index, edge_attr)
 
-        #remask strategy
-        #if batch_second_mask is not None and self.training:
+        # remask strategy
+        # if batch_second_mask is not None and self.training:
         #    x[batch_second_mask] = 0.0
 
         x = self.decoder(x)
         return x
-    
+
 
 ###############################################################################################
 import torch_geometric.utils as pgu
 from torch.nn import Parameter
 
 from torch_geometric.nn.conv import SimpleConv, GCNConv
+
 
 class GResBlockConv(torch.nn.Module):
     def __init__(self, in_dim, out_dim, hc):
@@ -560,8 +569,9 @@ class GResBlockConv(torch.nn.Module):
         x = F.relu(x)
         return x
 
+
 class GATResMeanConvWithRemaskAndStack(torch.nn.Module):
-    def __init__(self, name='GATResMeanConvWithRemaskAndStack', num_blocks=5, nc = 32):
+    def __init__(self, name='GATResMeanConvWithRemaskAndStack', num_blocks=5, nc=32):
         super(GATResMeanConvWithRemaskAndStack, self).__init__()
 
         self.num_blocks = num_blocks
@@ -573,32 +583,31 @@ class GATResMeanConvWithRemaskAndStack(torch.nn.Module):
         for _ in range(self.num_blocks):
             block = GResBlockConv(nc, nc, nc)
             self.blocks.append(block)
-        self.mask_token = torch.nn.Parameter(torch.zeros( 1, nc),False)
+        self.mask_token = torch.nn.Parameter(torch.zeros(1, nc), False)
         self.decoder = Linear(nc, 1)
 
-
-    def forward(self, x : torch.Tensor, edge_index, batch=None, edge_attr=None, batch_mask=None):
+    def forward(self, x: torch.Tensor, edge_index, batch=None, edge_attr=None, batch_mask=None):
         assert batch_mask is not None, 'input batch mask for Remasking strategy'
 
         batch_unmask = ~batch_mask.bool()
-        #x has shape (bn, 1)
-        #unmasked_x has shape (len_unmask, 1)
+        # x has shape (bn, 1)
+        # unmasked_x has shape (len_unmask, 1)
         unmasked_x = x[batch_unmask]
 
-        #unmasked_x has shape (len_unmask, nc)
+        # unmasked_x has shape (len_unmask, nc)
         unmasked_x = self.encoder(unmasked_x)
 
-        #gap_unmasked_x has shape (1, nc)
-        gap_unmasked_x = unmasked_x.mean(dim=0,keepdim=True)
-        
-        #x has shape (bn, nc)
+        # gap_unmasked_x has shape (1, nc)
+        gap_unmasked_x = unmasked_x.mean(dim=0, keepdim=True)
+
+        # x has shape (bn, nc)
         x = self.steam(x, edge_index)
-        
+
         x = x + gap_unmasked_x
-        
-        #x has shape (bn, nc)
+
+        # x has shape (bn, nc)
         for i in range(self.num_blocks):
-            #x has shape (bn, nc)->(bn, nc*2)
+            # x has shape (bn, nc)->(bn, nc*2)
             x = self.blocks[i](x, edge_index, edge_attr)
 
         x = self.decoder(x)

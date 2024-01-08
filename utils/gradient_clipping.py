@@ -1,6 +1,8 @@
 import numpy as np
 import torch
 from typing import Any
+
+
 def get_grad_norm(model):
     """
     Adapted from AutoClip: Adaptive Gradient Clipping
@@ -20,7 +22,7 @@ def get_grad_norm(model):
 
 
 class GradientClipping:
-    def __init__(self, percentile: float =10) -> None:
+    def __init__(self, percentile: float = 10) -> None:
         self.grad_history = []
         self.percentile = percentile
 
