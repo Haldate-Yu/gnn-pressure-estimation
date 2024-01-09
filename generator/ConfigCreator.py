@@ -16,7 +16,7 @@ import argparse
 # define a dummy configs
 parser = argparse.ArgumentParser()
 parser.add_argument('--wn_inp_path',
-                    default=r'.\inputs\ctown.inp', type=str,
+                    default=r'D:\GithubRepository\gnn-pressure-estimation\inputs\ctown.inp', type=str,
                     help='water EPANET INPUT path')
 parser.add_argument('--config_variant', default='7v1', type=str, help='additional name for config')
 parser.add_argument('--num_scenarios', default=10, type=float, help='number of generated scenarios')
@@ -126,7 +126,7 @@ def create_dummy_config(config_dir_path: str):
         raise FileNotFoundError()
 
     config_path = os.path.join(os.getcwd(), config_dir_path,
-                               os.path.basename(wn_inp_path[:-4]) + f'_{args.config_variant}_' + '_EPYNET_config.ini')
+                               os.path.basename(wn_inp_path[:-4]) + f'_{args.config_variant}_' + 'EPYNET_config.ini')
 
     # load a network
     wn = Network(wn_inp_path)

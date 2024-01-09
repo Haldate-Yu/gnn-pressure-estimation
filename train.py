@@ -538,7 +538,7 @@ def get_arguments(raw_args):
     parser.add_argument('--dataset_paths', default=[
         r"G:\.shortcut-targets-by-id\1uoKIPvTJgynIObYCS0Sktu0qX-U6wiSg\DiTEC\Data\Datasets[ size _ datatypes _ simtype _ notes _ name _ ddmmyyyy ]\10k_p_EPYNET_n_GEN-09 Oosterbeek_03022023.zip",
         # r"G:\.shortcut-targets-by-id\1uoKIPvTJgynIObYCS0Sktu0qX-U6wiSg\DiTEC\Data\Datasets[ size _ datatypes _ simtype _ notes _ name _ ddmmyyyy ]\Generalization\50k_hp_EPYNET_simple_ky13_10032023.zip"
-        ], type=str, nargs='*', action='store',
+    ], type=str, nargs='*', action='store',
                         help="list of dataset paths used for training and validation (order-sensitive)")
     parser.add_argument('--input_paths', default=[r"inputs/GEN-09 Oosterbeek.inp",
                                                   # r"inputs/ky13.inp"
@@ -584,7 +584,7 @@ def get_arguments(raw_args):
                         help="log method! support wandb|None")
     parser.add_argument('--log_gradient', default=True, type=bool, help="flag indicates keeping track of gradient flow")
     parser.add_argument('--project_name', default='test_project', type=str, help="name of tracking project")
-    parser.add_argument('--save_path', default='experiments_logs/test_args/fun_test', type=str,
+    parser.add_argument('--save_path', default='experiments_logs/test_args/models', type=str,
                         help="Path to store model weights")
     #########################################
     parser.add_argument('--num_test_trials', default=10, type=str,

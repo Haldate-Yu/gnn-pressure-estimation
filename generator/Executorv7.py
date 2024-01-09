@@ -14,12 +14,31 @@ from epynet import Network
 from copy import deepcopy
 import numpy as np
 from epynet import epanet2
-
+from enum import Enum
 import wntr
 import wntr.epanet.util as wutils
 import networkx as nx
 import epynet_utils as eutils
-from TokenGeneratorByRange import ParamEnum
+
+
+class ParamEnum(str, Enum):
+    RANDOM_TOKEN = 'token'
+    JUNC_DEMAND = 'junc_demand'
+    JUNC_ELEVATION = 'junc_elevation'
+    PUMP_STATUS = 'pump_status'
+    PUMP_SPEED = 'pump_speed'
+    PUMP_LENGTH = 'pump_speed'
+    TANK_LEVEL = 'tank_level'
+    TANK_ELEVATION = 'tank_elevation'
+    TANK_DIAMETER = 'tank_diameter'
+    VALVE_SETTING = 'valve_setting'
+    VALVE_STATUS = 'valve_status'
+    VALVE_DIAMETER = 'valve_diameter'
+    PIPE_ROUGHNESS = 'pipe_roughness'
+    PIPE_DIAMETER = 'pipe_diameter'
+    PIPE_LENGTH = 'pipe_length'
+    PIPE_MINORLOSS = 'pipe_minor_loss'
+    RESERVOIR_TOTALHEAD = 'reservoir_totalhead'
 
 
 class WDNExecutor(object):

@@ -16,6 +16,7 @@ from epynet import Network, ObjectCollection
 from epynet import epanet2
 import epynet_utils as eutils
 import os
+import sys
 import ray
 import zarr
 from collections import defaultdict
@@ -24,6 +25,12 @@ from sklearn.cluster import k_means
 import networkx as nx
 import wntr
 from copy import deepcopy
+
+# setting path
+abs_file = __file__
+prefix = os.path.dirname(abs_file)
+sys.path.append(prefix)
+print("now path: {}".format(sys.path))
 
 EPSILON = 1e-12
 
@@ -560,7 +567,7 @@ def batch_update(chunk_size, num_features, featlen_dict, args):
     return np.concatenate(concated_arrays, axis=-1)
 
 
-class RayTokenGenerator():
+class RayTokenGenerator:
     def __init__(self, store, num_scenes, featlen_dict, num_chunks):
         self.store = store
         self.num_scenes = num_scenes

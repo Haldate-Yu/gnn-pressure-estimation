@@ -1,6 +1,7 @@
 import torch
 import torch.nn.functional as F
 from torch_geometric.nn import GATConv, MLP, GINConv, ARMAConv, ChebConv, GCNConv, GCN2Conv
+from my_layers import SimpleConv
 from torch_geometric.nn import BatchNorm
 
 from typing import List, Optional, Union
@@ -10,7 +11,6 @@ from torch_scatter import scatter
 from torch_geometric.nn.conv import MessagePassing
 from torch_geometric.nn.dense.linear import Linear
 from torch_geometric.typing import Adj, OptPairTensor, OptTensor, Size
-from torch_geometric.nn.conv import SimpleConv
 
 
 class GATConvNet(torch.nn.Module):
@@ -548,10 +548,8 @@ class GATResMeanConvWithRemask(torch.nn.Module):
 
 
 ###############################################################################################
-import torch_geometric.utils as pgu
-from torch.nn import Parameter
-
-from torch_geometric.nn.conv import SimpleConv, GCNConv
+# import torch_geometric.utils as pgu
+# from torch.nn import Parameter
 
 
 class GResBlockConv(torch.nn.Module):
